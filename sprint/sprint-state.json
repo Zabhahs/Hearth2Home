@@ -1,0 +1,85 @@
+{
+  "$schema": "./sprint-state.schema-notes.md",
+  "meta": {
+    "project": "Hearth2Home / HomeChain MVP",
+    "governing_docs": ["docs/planning/mvp-30-day.md (PLN-01)", "docs/planning/sprint-map.md (PLN-02)", "docs/ops/autonomous-operation.md (OPS-01)", "docs/adr/ADR-0019-mvp-30-day-concessions.md"],
+    "autonomous_window_start": "2026-06-15",
+    "autonomous_window_end": "2026-06-22",
+    "today": "2026-06-15",
+    "fleet_status": "STAGED_NOT_RUNNING",
+    "fleet_status_note": "Machinery built and ready. Loop is NOT yet firing. Founder starts it per OPS-01 §9 once PC2 + phone remote are live. Until then nothing burns tokens.",
+    "last_tick": null,
+    "tick_count": 0,
+    "orchestrator_model": "claude-opus-4-8 (or claude-fable-5 while available)",
+    "human_review_gate": "Every task lands as a branch + PR. Nothing merges to main without founder approval. Target founder load: 30-60 min/day."
+  },
+  "budget": {
+    "policy": "subscription-caps",
+    "intent": "Maximize utilization without thrashing the cap. Keep the fleet busy on ready work; degrade gracefully (throttle, never fail) when a usage window is near its limit; resume when it resets.",
+    "rolling_window_hours": 5,
+    "soft_cap_est_output_tokens_per_window": 800000,
+    "soft_cap_note": "Heuristic ceiling per 5h window, summed from the token-ledger. Tune after observing 2-3 real windows. This is an ESTIMATE governor, not a metered API balance (see OPS-01 §4).",
+    "max_concurrent_subagents": 6,
+    "max_concurrent_subagents_note": "Hard ceiling is min(16, cores-2); 6 is the budget-aware default. Orchestrator scales DOWN from here as the window fills.",
+    "model_routing": {
+      "orchestrator_and_hard": {"model": "opus-4-8 / fable-5", "use_for": "sprint planning, integration, schema/migration decisions, security- or compliance-sensitive code, guardrail logic, PR synthesis/review, ambiguity resolution"},
+      "workhorse": {"model": "sonnet", "use_for": "most feature implementation, tests, CRUD, vendor adapters, refactors, scaffolding"},
+      "bulk": {"model": "haiku", "use_for": "doc formatting, lint/type fixes, boilerplate, status summarization, mechanical edits"}
+    },
+    "throttle_state": {"throttled": false, "reason": null, "resume_after": null}
+  },
+  "lanes": [
+    {"id": "A", "name": "Platform", "desc": "auth, audit, CI, env, ruleset engine, anchoring, observability", "worktree": "wt-lane-a"},
+    {"id": "B", "name": "Listings & Matching", "desc": "properties/units, listings, AI copy+lint, intake, matching", "worktree": "wt-lane-b"},
+    {"id": "C", "name": "Transactions", "desc": "offers, lease engine, e-sign, rent/ACH, deposits, condition reports", "worktree": "wt-lane-c"},
+    {"id": "D", "name": "Compliance & Surface", "desc": "screening+adverse-action, dashboard, a11y, runbooks", "worktree": "wt-lane-d"}
+  ],
+  "stop_conditions": [
+    "Reached a counsel-gated deliverable not yet signed off (lease template content, final adverse-action letter copy, WA ruleset legal values) -> build the ENGINE with a clearly-labeled placeholder, mark task in_review, write to INBOX, do NOT finalize legal content.",
+    "Tests fail after 2 self-correction attempts -> stop the task, open a draft PR with the failure, write to INBOX.",
+    "A migration or script would DROP or destructively alter existing data -> halt, write to INBOX, never run it autonomously.",
+    "Budget window soft-cap reached -> set throttle_state, finish the in-flight step, write digest, reschedule next tick after window reset.",
+    "Ambiguity that blocks correct implementation of a compliance/legal/money-adjacent feature -> do not guess; park to INBOX with the specific question.",
+    "Any task implying real fund movement, production deploy, or handling a real secret beyond .env templates -> halt, require human.",
+    "git: never force-push, never push to main, never merge a PR autonomously."
+  ],
+  "tasks": [
+    {"id": "T-001", "title": "Repo scaffold (Next.js + Supabase, lean)", "lane": "A", "priority": 1, "status": "done", "deps": [], "model": "sonnet", "branch": "done-in-setup-session", "acceptance": "npm install/typecheck/lint/build clean; module dirs mirror ARC-05", "notes": "Completed in the setup session (32 files)."},
+    {"id": "T-002", "title": "Supabase project + apply 9 migrations", "lane": "A", "priority": 1, "status": "in_progress", "deps": ["T-001"], "model": "opus", "acceptance": "Project healthy; migrations 0001-0009 applied; generated TS types committed", "notes": "Project created in setup session ($0). Apply migrations once healthy; commit generated types."},
+    {"id": "T-003", "title": "CI pipeline (GitHub Actions: install/lint/typecheck/test/build)", "lane": "A", "priority": 2, "status": "todo", "deps": ["T-001"], "model": "sonnet", "acceptance": "PRs run green checks; status required for merge"},
+    {"id": "T-004", "title": "Auth + session middleware + org/party bootstrap", "lane": "A", "priority": 2, "status": "todo", "deps": ["T-002"], "model": "opus", "acceptance": "Supabase auth login; protected routes; RLS-backed org/party rows; tests"},
+    {"id": "T-005", "title": "Audit-log writer lib (hash chain) + append_audit_event integration + tests", "lane": "A", "priority": 2, "status": "todo", "deps": ["T-002"], "model": "opus", "acceptance": "Gapless seq + prevHash verified by a test; events emitted from a sample action"},
+    {"id": "T-006", "title": "Config/secrets hardening (server-only) + env validation", "lane": "A", "priority": 3, "status": "todo", "deps": ["T-001"], "model": "sonnet", "acceptance": "Server-only guard on secret reads; clear failure on missing env"},
+    {"id": "T-024", "title": "Ruleset engine + WA ruleset v1 (PLACEHOLDER legal values)", "lane": "A", "priority": 3, "status": "todo", "deps": ["T-002"], "model": "opus", "blocked_on": "counsel for legal values (LGL-01)", "acceptance": "Versioned, effective-dated ruleset load; every computation stamps version; WA values flagged PLACEHOLDER pending counsel"},
+    {"id": "T-023", "title": "Daily audit-anchor job (Merkle root; chain write optional/stubbed)", "lane": "A", "priority": 5, "status": "todo", "deps": ["T-005"], "model": "sonnet", "acceptance": "Merkle root computed over a day of events; anchor writer behind an interface (no-op stub OK at MVP)"},
+    {"id": "T-030", "title": "Observability + PII-scrubbed logging + error taxonomy", "lane": "A", "priority": 5, "status": "todo", "deps": ["T-004"], "model": "sonnet", "acceptance": "Structured logs, no PII; error classes per ARC-08 §8.6"},
+
+    {"id": "T-010", "title": "Organizations/properties/units CRUD (landlord console) + RLS tests", "lane": "B", "priority": 2, "status": "todo", "deps": ["T-004"], "model": "sonnet", "acceptance": "Create/edit units; RLS proven by cross-org denial test"},
+    {"id": "T-011", "title": "Listings create/edit + hosted public listing page", "lane": "B", "priority": 3, "status": "todo", "deps": ["T-010"], "model": "sonnet", "acceptance": "Public listing renders; photos; price/terms off-chain"},
+    {"id": "T-012", "title": "AI listing-copy assistant + deterministic fair-housing ad lint", "lane": "B", "priority": 4, "status": "todo", "deps": ["T-011"], "model": "opus", "acceptance": "HUD word-list lint blocks non-compliant copy DETERMINISTICALLY (outside the model); test corpus passes"},
+    {"id": "T-013", "title": "Tenant application intake (AI + plain-form fallback) -> allowlisted fields", "lane": "B", "priority": 3, "status": "todo", "deps": ["T-002", "T-004"], "model": "sonnet", "acceptance": "Free-text extracted only into allowlisted schema; protected attrs unrepresentable"},
+    {"id": "T-014", "title": "Tenant-side unit matching (rule-based, explainable) + why-this-match", "lane": "B", "priority": 4, "status": "todo", "deps": ["T-013", "T-011"], "model": "opus", "acceptance": "Ranked units with per-feature contribution shown; reproducible from allowlisted vector"},
+
+    {"id": "T-016", "title": "Structured offer/counter forms (term-sheet rails, human-driven)", "lane": "C", "priority": 4, "status": "todo", "deps": ["T-011", "T-013"], "model": "sonnet", "acceptance": "Schema-validated deltas; versioned; ready for later agent attachment"},
+    {"id": "T-017", "title": "Lease generation engine (template merge + ruleset params) [content blocked]", "lane": "C", "priority": 4, "status": "todo", "deps": ["T-005", "T-024"], "model": "opus", "blocked_on": "counsel template sign-off (LGL-01)", "acceptance": "Engine merges a PLACEHOLDER attorney-template with ruleset params + stamps versions; real template dropped in post-sign-off"},
+    {"id": "T-018", "title": "E-sign vendor adapter + WORM archival of executed doc + hash", "lane": "C", "priority": 5, "status": "todo", "deps": ["T-017"], "model": "sonnet", "acceptance": "Adapter interface + sandbox flow; executed doc hashed + stored with evidence ref"},
+    {"id": "T-019", "title": "Rent schedules + ACH autopay (processor adapter) + dunning + late-fee math + notices", "lane": "C", "priority": 4, "status": "todo", "deps": ["T-010", "T-024"], "model": "opus", "acceptance": "Processor adapter (no platform custody); jurisdiction-aware late-fee from ruleset; dunning saga; notices"},
+    {"id": "T-020", "title": "Deposit documentation + statutory timers + itemization letter generator", "lane": "C", "priority": 5, "status": "todo", "deps": ["T-019"], "model": "sonnet", "acceptance": "Records amount/location/dates (NEVER held); timers; itemization letter from template"},
+    {"id": "T-021", "title": "Condition reports (web photo upload + timestamps + both-party ack)", "lane": "C", "priority": 5, "status": "todo", "deps": ["T-010"], "model": "sonnet", "acceptance": "Move-in/out photo sets, timestamps, dual acknowledgment (geo deferred)"},
+
+    {"id": "T-015", "title": "Screening vendor adapter + FCRA adverse-action workflow + letter templates [copy blocked]", "lane": "D", "priority": 3, "status": "todo", "deps": ["T-013"], "model": "opus", "blocked_on": "counsel adverse-action letter copy (LGL-01)", "acceptance": "Tenant-initiated vendor flow; adverse-action workflow + delivery tracking; letter COPY placeholder pending counsel; raw report data minimized"},
+    {"id": "T-022", "title": "Landlord dashboard + AI lease explainer (assistive-not-advice)", "lane": "D", "priority": 4, "status": "todo", "deps": ["T-010", "T-011", "T-019"], "model": "sonnet", "acceptance": "Units/applications/leases/rent status; explainer carries disclaimer"},
+    {"id": "T-031", "title": "Accessibility pass (WCAG 2.2 AA) on core flows", "lane": "D", "priority": 6, "status": "todo", "deps": ["T-011", "T-022"], "model": "haiku", "acceptance": "Axe checks pass on listing, application, dashboard"},
+    {"id": "T-032", "title": "Runbooks (incident, support) + status page stub", "lane": "D", "priority": 6, "status": "todo", "deps": [], "model": "haiku", "acceptance": "Incident + support runbooks in docs/ops/; status page placeholder"},
+    {"id": "T-033", "title": "Seed/demo data + local dev setup script", "lane": "A", "priority": 4, "status": "todo", "deps": ["T-002"], "model": "sonnet", "acceptance": "One command seeds a demo landlord + units + sample application"}
+  ],
+  "inbox": [
+    {"id": "INBOX-1", "for": "founder", "item": "Start condition: run OPS-01 §9 to launch the loop once PC2 + phone remote are live."},
+    {"id": "INBOX-2", "for": "founder+counsel", "item": "Engage counsel Day 1 with docs/legal/counsel-engagement-brief.md (LGL-01). Lease template sign-off by end of window is the hard gate for T-017/T-015/T-024 legal content."},
+    {"id": "INBOX-3", "for": "founder", "item": "Confirm WA as launch state (or alternative). Decide Seattle in/out for pilot (first-in-time + fair-chance overlays)."},
+    {"id": "INBOX-4", "for": "founder", "item": "Provide vendor sandbox keys when ready: screening CRA, e-sign, payment processor (Stripe-Connect-class), Anthropic API. Until then those adapters are built against stubs."}
+  ],
+  "proposed": [
+    {"note": "Scope-creep catcher. Agents append ideas here for human triage. Agents MUST NOT build anything not already in tasks[]. See PROPOSED.md."}
+  ]
+}

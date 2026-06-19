@@ -1,0 +1,1 @@
+{"tick":0,"ts":"2026-06-15","phase":"setup","actor":"setup-session","tasks_touched":["T-001","T-002"],"subagent_tokens":274139,"model_mix":{"opus":"orchestrator","sonnet":"scaffold+migrations+addenda"},"window_cumulative_est":274139,"throttled":false,"note":"Setup session: scaffold, migrations, counsel brief + Topic I addendum, sprint machinery. Loop not yet firing."}
