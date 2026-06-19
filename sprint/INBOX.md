@@ -4,10 +4,11 @@
 
 ## Open now (seeded at setup)
 
-- [ ] **INBOX-1 — Start the loop.** When PC2 + phone remote are live, run the start procedure in [OPS-01 §9](../docs/ops/autonomous-operation.md). Nothing burns tokens until you do.
-- [ ] **INBOX-2 — Engage counsel Day 1.** Send [counsel-engagement-brief.md (LGL-01)](../docs/legal/counsel-engagement-brief.md). Lease-template sign-off is the hard gate for the legal *content* of T-017 / T-015 / T-024.
-- [ ] **INBOX-3 — Confirm launch state.** Washington recommended. Decide whether Seattle is in or out of the pilot (first-in-time + fair-chance ordinances add rules).
-- [ ] **INBOX-4 — Vendor sandbox keys (when ready).** Screening CRA, e-sign, payment processor (Stripe-Connect-class), Anthropic API. Adapters are built against stubs until these arrive — paste them into Vercel/`.env.local`, never commit.
+- [ ] **INBOX-1 — Flip the master switch to go live.** The scheduled routine already fires `/sprint-tick`, but every tick **no-ops until `meta.fleet_status` in `sprint-state.json` == `RUNNING`.** To start the real build: merge the go-live config PR, then set `fleet_status` to `RUNNING` (one edit — do it from your phone, or ask Claude to). See [OPS-01 §9](../docs/ops/autonomous-operation.md).
+- [x] **INBOX-2 — Counsel: DEFERRED (your call, 2026-06-15).** Building the MVP without counsel. Engage with [LGL-01](../docs/legal/counsel-engagement-brief.md) **before taking real clients** to confirm lease template + adverse-action copy + WA/King County ruleset values. The fleet builds engines + labeled placeholders meanwhile and never blocks.
+- [x] **INBOX-3 — Launch jurisdiction: RESOLVED.** Washington, **King County (incl. Seattle)**. Seattle first-in-time + fair-chance overlays are in scope; rulesets target them (values TODO counsel).
+- [ ] **INBOX-4 — Vendor sandbox keys (when ready).** Screening CRA, e-sign, payment processor (Stripe-Connect-class), Anthropic API. Adapters run against stubs until these arrive — paste into Vercel env / `.env.local`, never commit.
+- [ ] **INBOX-5 — Connect Vercel (one click).** Import the GitHub repo at vercel.com → New Project, set the env vars from [docs/ops/deployment-setup.md](../docs/ops/deployment-setup.md). After that, every merge to `main` auto-deploys.
 
 ## How the loop uses this file
 - Stop condition hit → loop appends an item here, sets the task to `in_review`/`blocked`, and pushes a notification (OPS-01 §6).
