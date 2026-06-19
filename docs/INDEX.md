@@ -72,6 +72,7 @@ This documentation set translates the product scope ([README.md](../README.md)) 
 | Doc | File | Contents |
 |---|---|---|
 | OPS-01 | [autonomous-operation.md](ops/autonomous-operation.md) | The 24/7 self-managed build system: tick loop, token governor, sub-agent orchestration, escalation, safety, start/stop |
+| OPS-02 | [deployment-setup.md](ops/deployment-setup.md) | Go-live: Vercel Git integration, scheduled routine, the master switch, daily founder loop, go-live checklist |
 
 ### Legal
 
