@@ -42,3 +42,4 @@ yarn-error.log*
 
 # sprint runtime
 sprint/.tick.lock
+.vercel

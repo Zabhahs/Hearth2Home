@@ -4,11 +4,11 @@
 
 ## Open now (seeded at setup)
 
-- [ ] **INBOX-1 — Flip the master switch to go live.** The scheduled routine already fires `/sprint-tick`, but every tick **no-ops until `meta.fleet_status` in `sprint-state.json` == `RUNNING`.** To start the real build: merge the go-live config PR, then set `fleet_status` to `RUNNING` (one edit — do it from your phone, or ask Claude to). See [OPS-01 §9](../docs/ops/autonomous-operation.md).
+- [x] **INBOX-1 — Fleet is RUNNING (launched 2026-06-15).** Tick-1 merged PRs #3/#4/#5 green; the scheduled tick continues every 2h at :07. Keep this machine's Claude app open for 24/7. Optional: "Run now" the `hearth2home-sprint-tick` task once to pre-approve its tool permissions so unattended runs never pause.
 - [x] **INBOX-2 — Counsel: DEFERRED (your call, 2026-06-15).** Building the MVP without counsel. Engage with [LGL-01](../docs/legal/counsel-engagement-brief.md) **before taking real clients** to confirm lease template + adverse-action copy + WA/King County ruleset values. The fleet builds engines + labeled placeholders meanwhile and never blocks.
 - [x] **INBOX-3 — Launch jurisdiction: RESOLVED.** Washington, **King County (incl. Seattle)**. Seattle first-in-time + fair-chance overlays are in scope; rulesets target them (values TODO counsel).
 - [ ] **INBOX-4 — Vendor sandbox keys (when ready).** Screening CRA, e-sign, payment processor (Stripe-Connect-class), Anthropic API. Adapters run against stubs until these arrive — paste into Vercel env / `.env.local`, never commit.
-- [ ] **INBOX-5 — Connect Vercel (one click).** Import the GitHub repo at vercel.com → New Project, set the env vars from [docs/ops/deployment-setup.md](../docs/ops/deployment-setup.md). After that, every merge to `main` auto-deploys.
+- [x] **INBOX-5 — Vercel: LIVE.** https://hearth2home.vercel.app (Git integration connected → every merge to `main` auto-deploys). ⚠️ **Two production env vars are PLACEHOLDERS** — replace `SUPABASE_SERVICE_ROLE_KEY` and `DATABASE_URL` in Vercel (Project → Settings → Environment Variables) with real values from the Supabase dashboard before any server/admin feature relies on them. Also **rotate the Vercel token** shared in chat (vercel.com/account/tokens).
 
 ## How the loop uses this file
 - Stop condition hit → loop appends an item here, sets the task to `in_review`/`blocked`, and pushes a notification (OPS-01 §6).
