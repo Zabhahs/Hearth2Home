@@ -10,8 +10,9 @@
     "fleet_status_note": "LIVE 2026-06-15. Tick-1 done (manual launch): T-003/T-005/T-032 built green by model-routed agents and merged. Scheduled tick fires every 2h at :07 and continues. To pause: set PAUSED.",
     "jurisdiction": "Washington State, King County (includes Seattle) — primary launch focus. Seattle overlays in scope: first-in-time (FIT) tenant-selection ordinance + Fair Chance Housing Ordinance (criminal-history limits). Build engines/rulesets to these published rules; flag exact legal values TODO(counsel: confirm).",
     "counsel_posture": "NO COUNSEL ENGAGED YET — build the MVP now. Counsel-gated tasks (T-024 ruleset values, T-017 lease template text, T-015 adverse-action letter copy) ship as ENGINES with clearly-labeled placeholders; legal content is confirmed by counsel BEFORE taking real clients, not before building. The fleet never blocks waiting on counsel.",
-    "last_tick": null,
-    "tick_count": 0,
+    "last_tick": "2026-06-15 tick-1 (manual launch)",
+    "tick_count": 1,
+    "production_url": "https://hearth2home.vercel.app",
     "orchestrator_model": "claude-opus-4-8 (or claude-fable-5 while available)",
     "human_review_gate": "Every task lands as a branch + PR. Nothing merges to main without founder approval. Target founder load: 30-60 min/day."
   },
